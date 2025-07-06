@@ -380,6 +380,42 @@ impl ModuleImporter<'_> {
                 };
                 self.port_drive(cell, "Y", value);
             }
+            "$_BUF_" | "$_NOT_" => {
+                let a = self.port_value(cell, "A").unwrap_net();
+                let y = match &cell.type_[..] {
+                    "$_BUF_" => self.design.add_buf1(a),
+                    "$_NOT_" => self.design.add_not1(a),
+                    _ => unreachable!(),
+                };
+                self.port_drive(cell, "Y", y);
+            }
+            "$_AND_" | "$_NAND_" | "$_OR_" | "$_NOR_" | "$_XOR_" | "$_XNOR_" | "$_ANDNOT_" | "$_ORNOT_" => {
+                let a = self.port_value(cell, "A").unwrap_net();
+                let b = self.port_value(cell, "B").unwrap_net();
+                let y = match &cell.type_[..] {
+                    "$_AND_" => self.design.add_and1(a, b),
+                    "$_NAND_" => self.design.add_not1(self.design.add_and1(a, b)),
+                    "$_OR_" => self.design.add_or1(a, b),
+                    "$_NOR_" => self.design.add_not1(self.design.add_or1(a, b)),
+                    "$_XOR_" => self.design.add_xor1(a, b),
+                    "$_XNOR_" => self.design.add_not1(self.design.add_xor1(a, b)),
+                    "$_ANDNOT_" => self.design.add_and1(a, self.design.add_not1(b)),
+                    "$_ORNOT_" => self.design.add_or1(a, self.design.add_not1(b)),
+                    _ => unreachable!(),
+                };
+                self.port_drive(cell, "Y", y);
+            }
+            "$_MUX_" | "$_NMUX_" => {
+                let a = self.port_value(cell, "A").unwrap_net();
+                let b = self.port_value(cell, "B").unwrap_net();
+                let s = self.port_value(cell, "S").unwrap_net();
+                let y = match &cell.type_[..] {
+                    "$_MUX_" => self.design.add_mux1(s, b, a),
+                    "$_NMUX_" => self.design.add_not1(self.design.add_mux1(s, a, b)),
+                    _ => unreachable!(),
+                };
+                self.port_drive(cell, "Y", y);
+            }
             "$alu" => {
                 let width = cell.parameters.get("Y_WIDTH").unwrap().as_i32()? as usize;
                 let bi = self.port_value(cell, "BI").unwrap_net();
