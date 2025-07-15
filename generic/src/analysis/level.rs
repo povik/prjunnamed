@@ -24,12 +24,19 @@ impl RewriteRuleset for LevelAnalysis {
                 let ilevel = levels.get(&inet).copied().unwrap_or(0);
                 levels.insert(onet, ilevel);
             }
-        } else if !cell.has_state(design) {
+        }
+        if !cell.has_state(design) {
+            let fudge: u32 = match cell {
+                Cell::Adc(arg1, _, _) => 2 * ((arg1.len() as f32).log2().ceil() + 1.0) as u32,
+                Cell::Mul(arg1, arg2) => (arg1.len() + arg2.len()) as u32,
+                _ => 1,
+            };
+
             let mut level = 0;
             cell.visit(|net| {
                 if !net.is_const() {
                     let l = levels.get(&net).copied().unwrap_or(0);
-                    level = level.max(l + 1);
+                    level = level.max(l + fudge);
                 }
             });
             for net in output {
