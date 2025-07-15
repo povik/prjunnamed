@@ -9,6 +9,7 @@ members = [
     "yosys_json",
     "siliconblue",
     "graphviz",
+    "verilogout",
     "cli",
 ]
 
@@ -21,6 +22,7 @@ prjunnamed-memory.path = "memory"
 prjunnamed-yosys_json.path = "yosys_json"
 prjunnamed-siliconblue.path = "siliconblue"
 prjunnamed-graphviz.path = "graphviz"
+prjunnamed-verilogout.path = "verilogout"
 indexmap = "2.7.1"
 yap = "0.12.0"
 easy-smt = "0.3"

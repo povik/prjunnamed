@@ -1,0 +1,14 @@
+[package]
+name = "prjunnamed-verilogout"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+doctest = false
+
+[dependencies]
+bumpalo = "3.17.0"
+prjunnamed-netlist.workspace = true
