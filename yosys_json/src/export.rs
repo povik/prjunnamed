@@ -582,5 +582,5 @@ pub fn export(writer: &mut impl Write, designs: BTreeMap<String, Design>) -> std
     let ys_design = yosys::Design { creator: "prjunnamed".into(), modules: ys_modules.into() };
 
     let json = JsonValue::from(ys_design);
-    json.write_pretty(writer, /*spaces=*/ 4)
+    json.write(writer)
 }
