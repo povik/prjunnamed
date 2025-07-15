@@ -274,8 +274,16 @@ impl<'a> MetaStringRef<'a> {
 }
 
 impl<'a> MetaItemRef<'a> {
+    pub fn new_none(design: &'a Design) -> Self {
+        Self { design, index: MetaItemIndex::NONE }
+    }
+
     pub(crate) fn index(&self) -> MetaItemIndex {
         self.index
+    }
+
+    pub fn design(&self) -> &'a Design {
+        self.design
     }
 
     pub fn is_none(&self) -> bool {
@@ -348,6 +356,14 @@ impl<'a> MetaItemRef<'a> {
 
     pub fn merge(&self, other: MetaItemRef<'a>) -> Self {
         Self::from_merge(&self.design, [*self, other])
+    }
+
+    pub fn scope_parent(&self) -> Option<MetaItemRef<'a>> {
+        match self.get() {
+            MetaItem::NamedScope { parent, .. } => Some(parent),
+            MetaItem::IndexedScope { parent, .. } => Some(parent),
+            _ => None,
+        }
     }
 }
 
