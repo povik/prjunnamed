@@ -752,9 +752,6 @@ impl ModuleImporter<'_> {
                 )))
             }
             _ => {
-                if cell.type_.starts_with('$') {
-                    return Err(Error::Unsupported(format!("{} cell", cell.type_)));
-                }
                 // instance
                 let mut out_bits = vec![];
                 let mut next_out = 0;
