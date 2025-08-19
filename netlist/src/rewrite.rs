@@ -152,7 +152,7 @@ impl<'a> Rewriter<'a> {
     }
 
     fn run(&mut self) {
-        let worklist = self.design.topo_sort();
+        let worklist = self.design.topo_sort().unwrap();
         for item in worklist {
             match item {
                 TopoSortItem::Cell(cell_ref) => {

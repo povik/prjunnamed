@@ -744,7 +744,7 @@ pub enum TopoSortItem<'a> {
 }
 
 impl Design {
-    pub fn topo_sort(&self) -> Vec<TopoSortItem<'_>> {
+    pub fn topo_sort(&self) -> Option<Vec<TopoSortItem<'_>>> {
         fn is_splittable(cell: CellRef) -> bool {
             matches!(
                 &*cell.get(),
@@ -810,6 +810,7 @@ impl Design {
 
         let mut result = vec![];
         let mut visited = BTreeSet::new();
+        let mut complete = BTreeSet::new();
         for cell in self.iter_cells() {
             let roots = if is_splittable(cell) {
                 Vec::from_iter((0..cell.output_len()).map(|bit| TopoSortItem::CellBit(cell, bit)))
@@ -826,18 +827,22 @@ impl Design {
                     if let Some(net) = top.deps.pop() {
                         let Some(item) = get_item_from_net(self, net) else { continue };
                         if visited.contains(&item) {
+                            if !complete.contains(&item) {
+                                return None
+                            }
                             continue;
                         }
                         visited.insert(item);
                         stack.push(StackEntry { item, deps: get_deps(item) });
                     } else {
                         result.push(top.item);
+                        complete.insert(top.item);
                         stack.pop();
                     };
                 }
             }
         }
-        result
+        Some(result)
     }
 
     pub fn iter_cells_topo(&self) -> impl DoubleEndedIterator<Item = CellRef<'_>> {
