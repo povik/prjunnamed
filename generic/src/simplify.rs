@@ -54,6 +54,15 @@ pub fn simplify(design: &mut Design) -> bool {
 
         [PMux [PNot [PAny@s]] [PAny@a] [PAny@b]]    => design.add_mux(s, b, a);
 
+        [PMux [PAny@s1] [PMux [PAny@s2] [PAny@d11] [PAny]] [PAny@d0]] if s1 == s2 => design.add_mux(s1, d11, d0);
+        [PMux [PAny@s1] [PAny@d1] [PMux [PAny@s2] [PAny] [PAny@d00]]] if s1 == s2 => design.add_mux(s1, d1, d00);
+
+        [PMux [PAny@s1] [PMux [PAny@s2] [PAny@d11] [PAny@d10]] [PAny@d0]] if d11 == d0 => design.add_mux(design.add_or1(design.add_not1(s1), s2), d0, d10);
+        [PMux [PAny@s1] [PMux [PAny@s2] [PAny@d11] [PAny@d10]] [PAny@d0]] if d10 == d0 => design.add_mux(design.add_and1(s1, s2), d11, d0);
+
+        [PMux [PAny@s1] [PAny@d1] [PMux [PAny@s2] [PAny@d01] [PAny@d00]]] if d1 == d01 => design.add_mux(design.add_or1(s1, s2), d1, d00);
+        [PMux [PAny@s1] [PAny@d1] [PMux [PAny@s2] [PAny@d01] [PAny@d00]]] if d1 == d00 => design.add_mux(design.add_or1(s1, design.add_not1(s2)), d1, d01);
+
         [PAdc   [PConst@a] [PConst@b] [PConst@c]]   => a.adc(b, c);
         [PAdc@y [PAny@a]   [PZero]    [PZero]]      => a.zext(y.len());
         [PAdc@y [PZero]    [PAny@b]   [PZero]]      => b.zext(y.len());
