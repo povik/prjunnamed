@@ -151,8 +151,9 @@ impl<'a> Rewriter<'a> {
         value
     }
 
-    fn run(&mut self) {
+    fn run(&mut self) -> bool {
         let worklist = self.design.topo_sort().unwrap();
+        let mut did_rewrite = false;
         for item in worklist {
             match item {
                 TopoSortItem::Cell(cell_ref) => {
@@ -172,6 +173,7 @@ impl<'a> Rewriter<'a> {
                             }
                         }
                         RewriteResult::Cell(new_cell) => {
+                            did_rewrite = true;
                             cell_ref.replace(new_cell.clone());
                             for &rule in self.rules {
                                 rule.cell_added(self.design, &new_cell, &output);
@@ -184,6 +186,7 @@ impl<'a> Rewriter<'a> {
                             }
                         }
                         RewriteResult::CellMeta(new_cell, new_meta) => {
+                            did_rewrite = true;
                             cell_ref.replace(new_cell.clone());
                             for &rule in self.rules {
                                 rule.cell_added(self.design, &new_cell, &output);
@@ -197,6 +200,7 @@ impl<'a> Rewriter<'a> {
                             }
                         }
                         RewriteResult::Value(value) => {
+                            did_rewrite = true;
                             assert_eq!(value.len(), output.len());
                             for (net, new_net) in output.iter().zip(value) {
                                 self.design.replace_net(net, new_net);
@@ -223,11 +227,12 @@ impl<'a> Rewriter<'a> {
                 }
             }
         }
+        did_rewrite
     }
 }
 
 impl Design {
-    pub fn rewrite(&mut self, rules: &[&dyn RewriteRuleset]) {
+    pub fn rewrite(&mut self, rules: &[&dyn RewriteRuleset]) -> bool {
         assert!(!self.is_changed());
         let mut rewriter = Rewriter {
             design: self,
@@ -235,7 +240,8 @@ impl Design {
             processed: RefCell::new(HashSet::new()),
             cache: RefCell::new(HashMap::new()),
         };
-        rewriter.run();
+        let did_rewrite = rewriter.run();
         self.compact();
+        did_rewrite
     }
 }
